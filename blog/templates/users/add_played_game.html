@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить партию в {{ game.name }}{% endblock %}
+
+{% block content %}
+<h1>🎲 Добавить партию в "{{ game.name }}"</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <h3>Основная информация</h3>
+    <p>
+        <label>Длительность партии (минут):</label><br>
+        <input type="number" name="duration" placeholder="Например: 60">
+    </p>
+    <p>
+        <label>Комментарий:</label><br>
+        <textarea name="comment" rows="3" cols="50" placeholder="Ваши впечатления..."></textarea>
+    </p>
+    
+    <h3>👥 Участники (укажите себя тоже)</h3>
+    <div id="players-container">
+        <div class="player-row">
+            <h4>Игрок 1</h4>
+            <input type="text" name="player_1_name" placeholder="Имя пользователя" list="user-list">
+            <input type="number" name="player_1_place" placeholder="Место" style="width: 80px;">
+            <input type="number" name="player_1_score" placeholder="Очки" style="width: 80px;">
+        </div>
+    </div>
+    
+    <button type="button" onclick="addPlayerRow()" class="btn">➕ Добавить игрока</button>
+    <button type="submit" class="btn">💾 Сохранить партию</button>
+</form>
+
+<datalist id="user-list">
+    {% for user in users %}
+        <option value="{{ user.username }}">({{ user.username }})</option>
+    {% endfor %}
+    <option value="{{ request.user.username }}">{{ request.user.username }} (вы)</option>
+</datalist>
+
+<script>
+    let playerCount = 1;
+    
+    function addPlayerRow() {
+        playerCount++;
+        const container = document.getElementById('players-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'player-row';
+        newRow.innerHTML = `
+            <h4>Игрок ${playerCount}</h4>
+            <input type="text" name="player_${playerCount}_name" placeholder="Имя пользователя" list="user-list">
+            <input type="number" name="player_${playerCount}_place" placeholder="Место" style="width: 80px;">
+            <input type="number" name="player_${playerCount}_score" placeholder="Очки" style="width: 80px;">
+        `;
+        container.appendChild(newRow);
+    }
+</script>
+
+<style>
+    .player-row {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        background: #f9f9f9;
+    }
+</style>
+{% endblock %}

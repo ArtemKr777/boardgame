@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Поиск игроков{% endblock %}
+
+{% block content %}
+<h1>🔍 Поиск игроков</h1>
+
+<form method="get">
+    <input type="text" name="q" placeholder="Имя пользователя..." value="{{ query }}" style="width: 300px;">
+    <button type="submit" class="btn">Найти</button>
+</form>
+
+<h2>Все игроки</h2>
+<ul>
+    {% for user in users %}
+        <li><a href="{% url 'user_profile_detail' user.id %}">{{ user.username }}</a> — {{ user.first_name|default:"без имени" }}</li>
+    {% empty %}
+        <li>Пользователей не найдено</li>
+    {% endfor %}
+</ul>
+{% endblock %}

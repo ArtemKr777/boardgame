@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<h1>👤 Профиль: {{ user.username }}</h1>
+
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Имя:</strong> {{ user.first_name|default:"Не указано" }}</p>
+<p><strong>Город:</strong> {{ profile.city|default:"Не указан" }}</p>
+<p><strong>Возраст:</strong> {{ profile.age|default:"Не указан" }}</p>
+<p><strong>Телефон:</strong> {{ profile.phone|default:"Не указан" }}</p>
+
+<a href="{% url 'edit_profile' %}" class="btn">✏️ Редактировать профиль</a>
+
+<hr>
+
+<h2>🎲 Мои игры</h2>
+<ul>
+    {% for game in owned_games %}
+        <li>{{ game.game.name }}</li>
+    {% empty %}
+        <li>У вас пока нет игр в коллекции</li>
+    {% endfor %}
+</ul>
+
+<h2>📅 Сыгранные партии</h2>
+{% if played_games_by_game %}
+    {% for game, sessions in played_games_by_game.items %}
+        <details>
+            <summary><strong>{{ game.name }}</strong> ({{ sessions|length }} партий)</summary>
+            <ul>
+                {% for session in sessions %}
+                    <li>
+                        🕐 {{ session.play_date|date:"d.m.Y H:i" }}
+                        {% if session.duration_minutes %} | ⏱️ {{ session.duration_minutes }} мин{% endif %}
+                        {% if session.comment %} | 💬 {{ session.comment }}{% endif %}
+                        <details>
+                            <summary>🏆 Результаты</summary>
+                            <ul>
+                                {% for result in session.results.all %}
+                                    <li>
+                                        <a href="{% url 'user_profile_detail' result.player.id %}">
+                                            {{ result.player.username }}
+                                        </a>
+                                        — {{ result.place }} место
+                                        {% if result.score %}({{ result.score }} очков){% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
+    {% endfor %}
+{% else %}
+    <p>Вы ещё не записали ни одной партии</p>
+{% endif %}
+{% endblock %}

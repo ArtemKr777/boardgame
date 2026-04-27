@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль: {{ other_user.username }}{% endblock %}
+
+{% block content %}
+<h1>👤 Профиль: {{ other_user.username }}</h1>
+
+<p><strong>Имя:</strong> {{ other_user.first_name|default:"Не указано" }}</p>
+<p><strong>Город:</strong> {{ profile.city|default:"Не указан" }}</p>
+<p><strong>Возраст:</strong> {{ profile.age|default:"Не указан" }}</p>
+
+<hr>
+
+<h2>📅 Сыгранные партии</h2>
+{% if played_games_by_game %}
+    {% for game, sessions in played_games_by_game.items %}
+        <details>
+            <summary><strong>{{ game.name }}</strong> ({{ sessions|length }} партий)</summary>
+            <ul>
+                {% for session in sessions %}
+                    <li>
+                        🕐 {{ session.play_date|date:"d.m.Y H:i" }}
+                        {% if session.duration_minutes %} | ⏱️ {{ session.duration_minutes }} мин{% endif %}
+                        {% if session.comment %} | 💬 {{ session.comment }}{% endif %}
+                        <details>
+                            <summary>🏆 Результаты</summary>
+                            <ul>
+                                {% for result in session.results.all %}
+                                    <li>
+                                        <a href="{% url 'user_profile_detail' result.player.id %}">
+                                            {{ result.player.username }}
+                                        </a>
+                                        — {{ result.place }} место
+                                        {% if result.score %}({{ result.score }} очков){% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
+    {% endfor %}
+{% else %}
+    <p>Этот игрок ещё не записал ни одной партии</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<h1>✏️ Редактирование профиля</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <p>
+        <label>Имя:</label><br>
+        <input type="text" name="first_name" value="{{ user.first_name }}">
+    </p>
+    <p>
+        <label>Email:</label><br>
+        <input type="email" name="email" value="{{ user.email }}">
+    </p>
+    <p>
+        <label>Город:</label><br>
+        <input type="text" name="city" value="{{ profile.city }}">
+    </p>
+    <p>
+        <label>Возраст:</label><br>
+        <input type="number" name="age" value="{{ profile.age }}">
+    </p>
+    <p>
+        <label>Телефон:</label><br>
+        <input type="text" name="phone" value="{{ profile.phone }}">
+    </p>
+    <button type="submit" class="btn">💾 Сохранить</button>
+    <a href="{% url 'profile' %}">Отмена</a>
+</form>
+{% endblock %}

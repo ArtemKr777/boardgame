@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Каталог игр{% endblock %}
+
+{% block content %}
+<h1>🎲 Каталог настольных игр</h1>
+
+<div class="filter-form">
+    <form method="get" id="filterForm">
+        <h3>🔍 Поиск и фильтры</h3>
+        
+        <p>
+            <label>Название игры (независимо от регистра):</label><br>
+            <input type="text" name="name" placeholder="Например: каркассон" value="{{ request.GET.name }}" style="width: 300px;">
+        </p>
+        
+        <p>
+            <label>Количество игроков:</label><br>
+            <input type="number" name="players" placeholder="Например: 4" value="{{ request.GET.players }}" style="width: 100px;">
+        </p>
+        
+        <p>
+            <label>Время игры (мин):</label><br>
+            от <input type="number" name="time_min" placeholder="От" value="{{ request.GET.time_min }}" style="width: 80px;">
+            до <input type="number" name="time_max" placeholder="До" value="{{ request.GET.time_max }}" style="width: 80px;">
+        </p>
+        
+        <p>
+            <label>Возраст:</label><br>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div>
+                    от <input type="number" name="age_min" id="age_min" placeholder="например: 12" value="{{ request.GET.age_min }}" style="width: 80px;">
+                    <small>→ игры для этого возраста и старше</small>
+                </div>
+                <div>
+                    до <input type="number" name="age_max" id="age_max" placeholder="например: 14" value="{{ request.GET.age_max }}" style="width: 80px;">
+                    <small>→ игры для этого возраста и младше</small>
+                </div>
+            </div>
+            <small style="color: #888;">⚠️ Заполните только одно поле (от ИЛИ до)</small>
+        </p>
+        
+        <button type="submit" class="btn">🔍 Найти</button>
+        <a href="{% url 'games' %}">Сбросить фильтры</a>
+    </form>
+</div>
+
+<script>
+    // Скрипт, чтобы можно было заполнить только одно поле возраста
+    const ageMin = document.getElementById('age_min');
+    const ageMax = document.getElementById('age_max');
+    
+    if (ageMin && ageMax) {
+        ageMin.addEventListener('input', function() {
+            if (this.value) {
+                ageMax.disabled = true;
+                ageMax.value = '';
+            } else {
+                ageMax.disabled = false;
+            }
+        });
+        
+        ageMax.addEventListener('input', function() {
+            if (this.value) {
+                ageMin.disabled = true;
+                ageMin.value = '';
+            } else {
+                ageMin.disabled = false;
+            }
+        });
+        
+        // При загрузке страницы проверяем, какое поле заполнено
+        if (ageMin.value) {
+            ageMax.disabled = true;
+        }
+        if (ageMax.value) {
+            ageMin.disabled = true;
+        }
+    }
+</script>
+
+{% if games %}
+    <table>
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Игроков</th>
+                <th>Время</th>
+                <th>Возраст</th>
+                <th>Тематики</th>
+                <th>Категории</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in games %}
+            <tr>
+                <td>{{ game.name }}</a></td>
+                <td>{{ game.min_players }}-{{ game.max_players }}</a></td>
+                <td>{{ game.get_duration_display }}</a></td>
+                <td>{{ game.get_age_display }}</a></td>
+                <td>{{ game.thematics|slice:":200" }}</a></td>
+                <td>{{ game.categories|slice:":200" }}</a></a></a></a></a></a></a></a></a></a></a></a></a>
+                <td>
+                    {% if game in user.owned_games.all %}
+                        <a href="{% url 'remove_from_collection' game.id %}" class="btn" style="background: #d1453b;">🗑️ Удалить</a>
+                    {% else %}
+                        <a href="{% url 'add_to_collection' game.id %}" class="btn">➕ В коллекцию</a>
+                    {% endif %}
+                    <a href="{% url 'add_played_game' game.id %}" class="btn" style="background: #4CAF50;">🎲 Сыграл</a>
+                </a></a></a>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <p><strong>Всего игр найдено: {{ games.count }}</strong></p>
+{% else %}
+    <p>😕 Игр не найдено. Попробуйте изменить параметры поиска.</p>
+{% endif %}
+{% endblock %}
