@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import re
 from google.colab import drive
 import pandas as pd
-
+# Парсер для сбора данных 
 def get_page_html(url, delay=2):
     time.sleep(delay)
     headers = {
