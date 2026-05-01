@@ -216,13 +216,13 @@
         </div>
         <div class="nav-right">
             {% if user.is_authenticated %}
-                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                <form action="{% url 'account_logout' %}" method="post" style="display: inline;">
                     {% csrf_token %}
                     <button type="submit">🚪 Выйти</button>
                 </form>
             {% else %}
-                <a href="{% url 'login' %}">🔐 Войти</a>
-                <a href="{% url 'register' %}">📝 Регистрация</a>
+                <a href="{% url 'account_login' %}">🔐 Войти</a>
+                <a href="{% url 'account_signup' %}">📝 Регистрация</a>
             {% endif %}
         </div>
     </nav>

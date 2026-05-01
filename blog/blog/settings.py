@@ -9,6 +9,12 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+# В самом начале файла
+import os
+from dotenv import load_dotenv
+
+# Загружаем переменные из .env
+load_dotenv()
 
 from pathlib import Path
 
@@ -38,6 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'entries.apps.EntriesConfig',
+    'django.contrib.sites',  # ← ДОБАВИТЬ (обязательно для allauth)
+
+    # allauth приложения
+    'allauth',  # ← ДОБАВИТЬ
+    'allauth.account',  # ← ДОБАВИТЬ
+    'allauth.socialaccount',  # ← ДОБАВИТЬ (опционально, для соцсетей)
     'games',           # ← добавить
     'users',           # ← добавить
     'recommendations', # ← добавить
@@ -49,6 +61,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # ← ДОБАВИТЬ ЭТУ СТРОКУ
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -120,7 +133,64 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Перенаправление после входа
+LOGIN_URL = 'account_login'  # ← вместо 'login'
 LOGIN_REDIRECT_URL = 'games'
-LOGOUT_REDIRECT_URL = 'login'
-LOGIN_URL = 'login'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
+
+# =====================================================
+# НАСТРОЙКИ DJANGO-ALLAUTH (НОВАЯ ВЕРСИЯ)
+# =====================================================
+
+SITE_ID = 1
+
+# Бэкенды аутентификации
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Настройки входа (новый формат)
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}  # вместо ACCOUNT_AUTHENTICATION_METHOD
+
+# Настройки регистрации (новый формат)
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']  # вместо ACCOUNT_EMAIL_REQUIRED и ACCOUNT_USERNAME_REQUIRED
+
+# Остальные настройки
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_MIN_LENGTH = 3
+ACCOUNT_PRESERVE_USERNAME_CASING = False
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+
+# Для разработки (письма в консоль)
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_USE_LOCALTIME = True
+
+# Перенаправления
+LOGIN_REDIRECT_URL = 'games'
+LOGOUT_REDIRECT_URL = 'account_login'
+LOGIN_URL = 'account_login'
+
+# =====================================================
+# НАСТРОЙКИ EMAIL (GMAIL)
+# =====================================================
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+EMAIL_HOST_USER = 'boardguru10@gmail.com'           # ваш Gmail
+EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')  # берём пароль из .env
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# 1. Указываем адрес, где будет жить сайт
+# Вместо 'your_username' впишите свой реальный логин от PythonAnywhere
+ALLOWED_HOSTS = ['your_username.pythonanywhere.com', '127.0.0.1']
+
+# 2. Указываем папку, куда Django сложит все статические файлы (CSS, картинки)
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# 3. Обязательно выключаем режим отладки
+DEBUG = False

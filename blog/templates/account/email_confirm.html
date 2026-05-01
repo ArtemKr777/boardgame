@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load account %}
+
+{% block title %}Подтверждение email{% endblock %}
+
+{% block content %}
+<h1>✉️ Подтверждение email</h1>
+
+{% if confirmation %}
+    <p>Подтвердите, что email <strong>{{ confirmation.email_address.email }}</strong> принадлежит пользователю {{ confirmation.email_address.user.username }}.</p>
+    
+    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+        {% csrf_token %}
+        <button type="submit" class="btn">Подтвердить</button>
+    </form>
+{% else %}
+    <p>Ссылка для подтверждения устарела или недействительна.</p>
+    <a href="{% url 'account_login' %}">Войти заново</a>
+{% endif %}
+{% endblock %}
