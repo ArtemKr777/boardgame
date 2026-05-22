@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from .models import Profile, OwnedGame, PlayedGame, PlayerResult
 from games.models import Game
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+from .models import UserSessionLog
+from django.db.models import Count, Avg, Sum, F
+from django.utils.timezone import now, timedelta
 
 @login_required
 def profile(request):
@@ -163,3 +168,29 @@ def user_profile_detail(request, user_id):
         'profile': profile,
         'played_games_by_game': played_games_by_game,
     })
+
+@staff_member_required
+def analytics_dashboard(request):
+    # Общая статистика
+    total_sessions = UserSessionLog.objects.count()
+    total_page_views = UserSessionLog.objects.aggregate(Sum('page_views'))['page_views__sum'] or 0
+    avg_page_views = UserSessionLog.objects.aggregate(Avg('page_views'))['page_views__avg'] or 0
+
+    # Активные сессии за последние 30 минут
+    active_threshold = now() - timedelta(minutes=30)
+    active_sessions = UserSessionLog.objects.filter(last_activity__gte=active_threshold).count()
+
+    # Статистика по пользователям
+    user_stats = UserSessionLog.objects.filter(user__isnull=False).values('user__username').annotate(
+        sessions=Count('id'),
+        views=Sum('page_views')
+    ).order_by('-views')[:10]
+
+    context = {
+        'total_sessions': total_sessions,
+        'total_page_views': total_page_views,
+        'avg_page_views': round(avg_page_views, 1),
+        'active_sessions': active_sessions,
+        'user_stats': user_stats,
+    }
+    return render(request, 'analytics/dashboard.html', context)

@@ -9,32 +9,36 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-# В самом начале файла
+
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Загружаем переменные из .env
 load_dotenv()
 
-from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# =====================================================
+# БЕЗОПАСНОСТЬ (SECURITY)
+# =====================================================
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-0*8(j=de31!m!(#vpz+b3o*hkw&6guer^ilc2*2e4))4_bgg&w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'kravart10.pythonanywhere.com',
+    '127.0.0.1',
+    'localhost',
+]
 
-
-# Application definition
+# =====================================================
+# ПРИЛОЖЕНИЯ (INSTALLED APPS)
+# =====================================================
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,17 +47,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'entries.apps.EntriesConfig',
-    'django.contrib.sites',  # ← ДОБАВИТЬ (обязательно для allauth)
+    'django.contrib.sites',  # Обязательно для allauth
 
     # allauth приложения
-    'allauth',  # ← ДОБАВИТЬ
-    'allauth.account',  # ← ДОБАВИТЬ
-    'allauth.socialaccount',  # ← ДОБАВИТЬ (опционально, для соцсетей)
-    'games',           # ← добавить
-    'users',           # ← добавить
-    'recommendations', # ← добавить
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
+    # Ваши приложения
+    'entries.apps.EntriesConfig',
+    'games',
+    'users',
+    'recommendations',
 ]
+
+# =====================================================
+# МИДЛВАРЫ (MIDDLEWARE)
+# =====================================================
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,12 +71,17 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # ← ДОБАВИТЬ ЭТУ СТРОКУ
+    'allauth.account.middleware.AccountMiddleware',
+    'users.middleware.SessionTrackingMiddleware',   # ← добавить эту строку
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'blog.urls'
+
+# =====================================================
+# ШАБЛОНЫ (TEMPLATES)
+# =====================================================
 
 TEMPLATES = [
     {
@@ -85,9 +100,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'blog.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# =====================================================
+# БАЗА ДАННЫХ (DATABASE)
+# =====================================================
 
 DATABASES = {
     'default': {
@@ -96,9 +111,9 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+# =====================================================
+# ВАЛИДАЦИЯ ПАРОЛЕЙ
+# =====================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -115,82 +130,83 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# =====================================================
+# ИНТЕРНАЦИОНАЛИЗАЦИЯ
+# =====================================================
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+LANGUAGE_CODE = 'ru-ru'
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
 USE_TZ = True
 
+# =====================================================
+# СТАТИЧЕСКИЕ ФАЙЛЫ (STATIC FILES)
+# =====================================================
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
-LOGIN_URL = 'account_login'  # ← вместо 'login'
-LOGIN_REDIRECT_URL = 'games'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
 
 # =====================================================
-# НАСТРОЙКИ DJANGO-ALLAUTH (НОВАЯ ВЕРСИЯ)
+# АУТЕНТИФИКАЦИЯ И ПЕРЕНАПРАВЛЕНИЯ
+# =====================================================
+
+LOGIN_URL = 'account_login'
+LOGIN_REDIRECT_URL = 'games'
+
+# =====================================================
+# НАСТРОЙКИ DJANGO-ALLAUTH
 # =====================================================
 
 SITE_ID = 1
 
-# Бэкенды аутентификации
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# Настройки входа (новый формат)
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}  # вместо ACCOUNT_AUTHENTICATION_METHOD
+# Настройки входа и регистрации
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 
-# Настройки регистрации (новый формат)
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']  # вместо ACCOUNT_EMAIL_REQUIRED и ACCOUNT_USERNAME_REQUIRED
-
-# Остальные настройки
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# Остальные настройки allauth
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 ACCOUNT_PRESERVE_USERNAME_CASING = False
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
-
-# Для разработки (письма в консоль)
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-#EMAIL_USE_LOCALTIME = True
-
-# Перенаправления
-LOGIN_REDIRECT_URL = 'games'
-LOGOUT_REDIRECT_URL = 'account_login'
-LOGIN_URL = 'account_login'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 # =====================================================
-# НАСТРОЙКИ EMAIL (GMAIL)
+# НАСТРОЙКИ EMAIL (ПОЧТОВЫЙ СЕРВЕР PYTHONANYWHERE)
 # =====================================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.pythonanywhere.com'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'KravArt10'  # ваш логин PythonAnywhere (KravArt10)
+EMAIL_HOST_PASSWORD = 'bac10_01cab'  # пароль от PythonAnywhere
+DEFAULT_FROM_EMAIL = 'KravArt10@pythonanywhere.com'
 
-EMAIL_HOST_USER = 'boardguru10@gmail.com'           # ваш Gmail
-EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD')  # берём пароль из .env
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# =====================================================
+# НАСТРОЙКИ БЕЗОПАСНОСТИ ДЛЯ PYTHONANYWHERE
+# =====================================================
 
-# 1. Указываем адрес, где будет жить сайт
-# Вместо 'your_username' впишите свой реальный логин от PythonAnywhere
-ALLOWED_HOSTS = ['your_username.pythonanywhere.com', '127.0.0.1']
+# Доверенные источники для CSRF (обязательно для HTTPS)
+CSRF_TRUSTED_ORIGINS = [
+    'https://kravart10.pythonanywhere.com',
+    'http://kravart10.pythonanywhere.com',
+]
 
-# 2. Указываем папку, куда Django сложит все статические файлы (CSS, картинки)
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Настройки безопасности сессий и cookies
+SESSION_COOKIE_SECURE = True      # Передавать cookies только по HTTPS
+SESSION_COOKIE_HTTPONLY = True    # Защита от XSS
+CSRF_COOKIE_SECURE = True         # CSRF токен только по HTTPS
 
-# 3. Обязательно выключаем режим отладки
-DEBUG = False
+# Настройка для работы за reverse-proxy (PythonAnywhere)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
